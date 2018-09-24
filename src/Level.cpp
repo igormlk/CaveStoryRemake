@@ -141,7 +141,101 @@ void Level::loadMap(std::string name, Graphics &graphics)
             pLayer = pLayer->NextSiblingElement("layer");
         }
     }
+
+    //parse out the collisions
+    XMLElement * pObjectGroup = mapNode->FirstChildElement("objectgroup");
+
+    if(pObjectGroup != nullptr)
+    {
+        while(pObjectGroup)
+        {
+            const char *  name = pObjectGroup->Attribute("name");
+            std::stringstream ss;
+            ss << name;
+            parseCollisions(pObjectGroup, ss, this->_collisionRects);
+            parseSpawnPoints(pObjectGroup, ss);
+
+            pObjectGroup = pObjectGroup->NextSiblingElement("objectgroup");
+        }
+    }
+
+
+}
+
+void Level::parseCollisions(XMLElement * pObjectGroup, const std::stringstream &ss, std::vector<Rectangle> & list) const
+{
+    if(ss.str() == "collisions")
+    {
+        XMLElement * pObject = pObjectGroup->FirstChildElement("object");
+        if(pObject != nullptr)
+        {
+            while(pObject)
+            {
+                float x,y,width,height;
+                x = std::ceil(pObject->FloatAttribute("x")) * globals::SPRITE_SCALE;
+                y = std::ceil(pObject->FloatAttribute("y")) * globals::SPRITE_SCALE;
+                width = std::ceil(pObject->FloatAttribute("width")) * globals::SPRITE_SCALE;
+                height = std::ceil(pObject->FloatAttribute("height")) * globals::SPRITE_SCALE;
+
+                Rectangle r = Rectangle(x,y,width,height);
+
+                list.push_back(r);
+                pObject = pObject->NextSiblingElement("object");
+            }
+        }
+    }
 }
 
 void Level::splitTiles(std::string &stringT, std::vector<std::string> &tilesArray) const
-{ boost::split(tilesArray, stringT, boost::algorithm::is_any_of(",")); }
+{
+    boost::split(tilesArray, stringT, boost::algorithm::is_any_of(","));
+}
+
+std::vector<Rectangle> Level::checkTileCollisions(const Rectangle &other)
+{
+    std::vector<Rectangle> others;
+    for(Rectangle i : this->_collisionRects)
+    {
+        if(i.collidesWith(other))
+        {
+            others.push_back(i);
+        }
+    }
+    return others;
+}
+
+void Level::parseSpawnPoints(tinyxml2::XMLElement *pObjectGroup, std::stringstream &ss)
+{
+    if(ss.str() == "spawnPoints")
+    {
+        XMLElement *pObject = pObjectGroup->FirstChildElement("object");
+        if (pObject != nullptr)
+        {
+            while (pObject)
+            {
+                float x, y;
+                x = std::ceil(pObject->FloatAttribute("x")) * globals::SPRITE_SCALE;
+                y = std::ceil(pObject->FloatAttribute("y")) * globals::SPRITE_SCALE;
+                const char * name = pObject->Attribute("name");
+                std::stringstream strName;
+                strName << name;
+                setPlayerSpawnPoint(x, y, strName);
+
+                pObject = pObject->NextSiblingElement("object");
+            }
+        }
+    }
+}
+
+void Level::setPlayerSpawnPoint(float x, float y, const std::stringstream &strName)
+{
+    if(strName.str() == "player")
+    {
+        _spawnPoint = Vector2(x,y);
+    }
+}
+
+const Vector2 Level::getPlayerSpawnPoint() const
+{
+    return _spawnPoint;
+}

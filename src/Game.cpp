@@ -34,8 +34,8 @@ void Game::gameLoop() {
     SDL_Event event;
     InputKeyboard input;
 
-    this->player = Player(graphics, 50, 50);
     this->level = Level("Map1", Vector2(100,100), graphics);
+    this->player = Player(graphics, level.getPlayerSpawnPoint().getX(), level.getPlayerSpawnPoint().getY());
 
     int LAST_UPDATE_TIME = SDL_GetTicks();
     int CURRENT_TIME = 0;
@@ -98,4 +98,10 @@ void Game::update(float elapsedTime)
 {
     this->player.update(elapsedTime);
     this->level.update(elapsedTime);
+    //Check Collisions
+    std::vector<Rectangle> others = this->level.checkTileCollisions(this->player.getBoundingBox());
+    if(others.size() > 0)
+    {
+        this->player.handleTileCollisions(others);
+    }
 }

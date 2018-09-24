@@ -7,6 +7,7 @@
 
 #include "globals.h"
 #include "AnimatedSprite.h"
+#include "Rectangle.h"
 #include <string>
 
 class Player : public AnimatedSprite
@@ -21,6 +22,11 @@ public:
     void moveRight();
     void stopMoving();
 
+    const float getX() const;
+    const float getY() const;
+
+    void handleTileCollisions(std::vector<Rectangle> &others);
+
 protected:
     void animationDone(std::string currentAnimation) override;
     void setupAnimation() override;
@@ -28,6 +34,8 @@ protected:
 private:
     float _dx, _dy;
     DIRECTION _facing;
+    bool _grounded;
+    Rectangle collideBox;
 };
 
 #endif //PLAYER_H

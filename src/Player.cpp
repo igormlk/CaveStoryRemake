@@ -27,7 +27,8 @@ Player::Player()
 }
 
 Player::Player(Graphics &graphics, float x, float y) :
-        AnimatedSprite(graphics,"../resources/sprites/MyChar.png",0,0,16,16,x,y,100)
+        AnimatedSprite(graphics,"../resources/sprites/MyChar.png",0,0,16,16,x,y,100),
+        _dx(0), _dy(0), _facing(RIGHT), _grounded(false)
 {
     graphics.loadImage("../resources/MyChar.png");
     this->setupAnimation();
@@ -41,7 +42,15 @@ void Player::draw(Graphics &graphics)
 
 void Player::update(int elapsedTime)
 {
+    //apply gravity
+
+    if(_dy <= globals::GRAVITY_CAP)
+    {
+        this->_dy += globals::GRAVITY * elapsedTime;
+    }
+
     this->x += this->_dx * elapsedTime;
+    this->y += this->_dy * elapsedTime;
     AnimatedSprite::update(elapsedTime);
 }
 
@@ -77,5 +86,43 @@ void Player::stopMoving()
 
             case DOWN:
             break;
+    }
+}
+
+const float Player::getX() const
+{
+    return this->x;
+}
+
+const float Player::getY() const
+{
+    return this->y;
+}
+
+void Player::handleTileCollisions(std::vector<Rectangle> &others)
+{
+    for(Rectangle i : others)
+    {
+        sides::Side collisionSide = Sprite::getCollisionSide(i);
+        switch(collisionSide)
+        {
+            case sides::NONE:
+                break;
+            case sides::LEFT:
+                this->x = i.getRight() + 1;
+                break;
+            case sides::RIGHT:
+                this->x = i.getLeft()  - this->_boundingBox.getWidth() - 1;
+                break;
+            case sides::TOP:
+                this->y = i.getBottom() + 1;
+                this->_dy = 0;
+                break;
+            case sides::BOTTOM:
+                this->y = i.getTop() - this->_boundingBox.getHeigth() - 1;
+                this->_dy = 0;
+                this->_grounded = true;
+                break;
+        }
     }
 }

@@ -8,6 +8,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include "Graphics.h"
+#include "Rectangle.h"
+#include "globals.h"
 
 class Sprite
 {
@@ -18,12 +20,16 @@ public:
     virtual void update();
     void draw(Graphics & graphics, int x, int y);
 
+    const Rectangle & getBoundingBox() const;
+    const sides::Side getCollisionSide(Rectangle &other) const;
+
 private:
 
 protected:
     float x, y;
     SDL_Rect _srcRect;
     SDL_Texture * spriteSheet;
+    Rectangle _boundingBox;
 };
 
 
