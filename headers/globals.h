@@ -11,6 +11,7 @@ namespace globals{
     const float SPRITE_SCALE = 2.0f;
     const float GRAVITY = 0.002f;
     const float GRAVITY_CAP = 0.8f;
+    const float JUMP_SPEED = 0.7f;
 }
 
 namespace sides
